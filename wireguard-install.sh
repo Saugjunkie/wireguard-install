@@ -336,6 +336,14 @@ function revokeClient() {
 	# remove [Peer] block matching $CLIENT_NAME
 	sed -i "/^### Client ${CLIENT_NAME}\$/,/^$/d" "/etc/wireguard/${SERVER_WG_NIC}.conf"
 
+	# Home directory of the user, where the client configuration will be written
+	if [ -e "/home/${CLIENT_NAME}" ]; then # if $1 is a user name
+		HOME_DIR="/home/${CLIENT_NAME}"
+	elif [ "${SUDO_USER}" ]; then # if not, use SUDO_USER
+		HOME_DIR="/home/${SUDO_USER}"
+	else # if not SUDO_USER, use /root
+		HOME_DIR="/root"
+	fi
 	# remove generated client file
 	find /home/ -maxdepth 2 -name "${SERVER_WG_NIC}-client-${CLIENT_NAME}.conf" -delete
 	rm -f "/root/${SERVER_WG_NIC}-client-${CLIENT_NAME}.conf"
