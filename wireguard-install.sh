@@ -114,6 +114,13 @@ function installQuestions() {
 		fi
 	done
 
+	# Need a ipv6 forward name dns for qrencode to work
+	echo ""
+	echo "We need a server name, using hostname fqdn (beware only an AAAA entry if ipv6)"
+	SERVER_NAME_DEFAULT=$(/usr/bin/hostname --fqdn)
+	until [[ ${SERVER_NAME} =~ ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$ ]]; do
+		read -rp "Server's name : " -e -i "${SERVER_NAME_DEFAULT}" SERVER_NAME
+	done
 	echo ""
 	echo "Okay, that was all I needed. We are ready to setup your WireGuard server now."
 	echo "You will be able to generate a client at the end of the installation."
@@ -171,6 +178,7 @@ function installWireGuard() {
 	# Save WireGuard settings
 	echo "SERVER_PUB_IP=${SERVER_PUB_IP}
 SERVER_PUB_NIC=${SERVER_PUB_NIC}
+SERVER_NAME=${SERVER_NAME}
 SERVER_WG_NIC=${SERVER_WG_NIC}
 SERVER_WG_IPV4=${SERVER_WG_IPV4}
 SERVER_WG_IPV6=${SERVER_WG_IPV6}
@@ -221,7 +229,7 @@ net.ipv6.conf.all.forwarding = 1" >/etc/sysctl.d/wg.conf
 }
 
 function newClient() {
-	ENDPOINT="${SERVER_PUB_IP}:${SERVER_PORT}"
+	ENDPOINT="${SERVER_NAME}:${SERVER_PORT}"
 
 	echo ""
 	echo "Tell me a name for the client."
